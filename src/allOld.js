@@ -14,29 +14,6 @@ const Outlier = ([id, comment] = {}) => ({
 // a = list.map(x => Outlier([x]));
 
 
-// is this function a closure? it works as is, but has not
-// the signature  Object = (() => {})();
-// const count = (() => {
-//     let counter = 0;
-//     return () => counter += 1; return counter;
-// })();
-const DataClass = (title, value) => {
-  let dataClasses = [];
-  dataClasses.push({ title, value });
-  return ({
-    getClass() {
-      return dataClasses;
-    },
-    addClass(title, value) {
-      dataClasses.push({ title, value });
-      return this;
-    }
-  });
-};
-// let a = DataClass( 'testClass',  ['id1', 'id2', 'id2', 'id1', 'id3'] );
-// a.addClass( 'testClass',  ['id1', 'id2', 'id2', 'id1', 'id3'] );
-// console.log(a.getClass());
-
 // ============================================
 // Stat functions
 // ============================================
@@ -75,31 +52,6 @@ function shuffle(array) {
   return array;
 }
 
-// check this function to importa class from csv
-// it should be possible to import dataset from csv
-function createMatrixClass(classFile, spectraDataSet, options = {}) {
-  options = Object.assign({}, { delimiter: ',', header: true, debug: false }, options);
-  let classVector = [];
-  let dataName = [];
-  let meta = Papa.parse(classFile, { delimiter: options.delimiter, header: options.header }).data;
-  let metaIndex = {};
-  meta.forEach((a) => metaIndex[a.filename] = a);
-  let withoutClass = [];
-  let dataClass = new Array(spectraDataSet.length);
-  let i = dataClass.length;
-  while (i--) {
-    dataClass[i] = new Array(2).fill(-1);
-    let vector = dataClass[i];
-    let filename = spectraDataSet[i].sd.filename;
-    let index = metaIndex[filename];
-    if (typeof index === 'undefined') {
-      withOutClass.push(filename);
-    } else {
-      vector[index.class] = 1;
-    }
-  }
-  return { dataClass: dataClass, withOutClass: withoutClass };
-}
 
 function computeQ2(realY, predictedY) {
   realY = Matrix.checkMatrix(realY);
@@ -160,44 +112,6 @@ function transpose(matrix) {
   return matrix[0].map((col, i) => matrix.map((row) => row[i]));
 }
 
-function sampleClass(classVector, fraction) {
-  // sort the vector
-  let classVectorSorted = JSON.parse(JSON.stringify(classVector));
-  let result = Array.from(Array(classVectorSorted.length).keys())
-    .sort((a, b) => (classVectorSorted[a] < classVectorSorted[b] ? -1 :
-      (classVectorSorted[b] < classVectorSorted[a]) | 0));
-  classVectorSorted.sort((a, b) => (a < b ? -1 : (b < a) | 0));
-
-  // counts the class elements
-  let counts = {};
-  classVectorSorted.forEach((x) => counts[x] = (counts[x] || 0) + 1);
-
-  // pick a few per class
-  let indexOfSelected = [];
-
-  Object.keys(counts).forEach((e, i) => {
-    let shift = [];
-    Object.values(counts).reduce((a, c, i) => shift[i] = a + c, 0);
-
-    let arr = [...Array(counts[e]).keys()];
-
-    let r = [];
-    for (let i = 0; i < Math.floor(counts[e] * fraction); i++) {
-      let n = arr[Math.floor(Math.random() * arr.length)];
-      r.push(n);
-      let ind = arr.indexOf(n);
-      arr.splice(ind, 1);
-    }
-
-    (i == 0) ? indexOfSelected = indexOfSelected.concat(r) : indexOfSelected = indexOfSelected.concat(r.map((x) => x + shift[i - 1]));
-  });
-
-  // sort back the index
-  let indexBack = [];
-  indexOfSelected.forEach((e) => indexBack.push(result[e]));
-
-  return indexBack;
-}
 
 function scale(dataset, options) {
   let center = !!options.center;
@@ -582,17 +496,14 @@ function ellipse(center, std, nbPoints) {
 }
 
 function log(title, txt) {
-    
-    let log = API.getData('log').resurrect();
-    log = log.concat('\n', '===============', title, '===============', '\n');
-    txt.forEach((e, i) => {
-    
-        log = log.concat(Object.keys(e), ' ', Object.values(e), '\n');
-    
-        return log;
-    });
-    API.createData('log', log);
-    
+  let log = API.getData('log').resurrect();
+  log = log.concat('\n', '===============', title, '===============', '\n');
+  txt.forEach((e, i) => {
+    log = log.concat(Object.keys(e), ' ', Object.values(e), '\n');
+
+    return log;
+  });
+  API.createData('log', log);
 }
 
 API.cache('helperFunctions', {

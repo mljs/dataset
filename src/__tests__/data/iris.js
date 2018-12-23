@@ -154,3 +154,9 @@ const iris = [
 ];
 
 module.exports = iris;
+
+describe('iris test', () => {
+  it('test iris creation', () => {
+    expect(iris).toHaveLength(150);
+  });
+});
