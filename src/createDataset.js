@@ -1,20 +1,20 @@
 'use strict';
 
-let Utils = {};
-Utils.norm = function norm(X) {
-  return Math.sqrt(X.clone().apply(pow2array).sum());
-};
+// let Utils = {};
+// Utils.norm = function norm(X) {
+//   return Math.sqrt(X.clone().apply(pow2array).sum());
+// };
 
 
 const {
-  Matrix,
-  MatrixStat: Stat,
-  ArrayStat
+  Matrix
+  // MatrixStat: Stat,
+  // ArrayStat
 } = require('ml');
 
-const computeMean = ArrayStat.mean;
-const mean = Stat.mean;
-const stdev = Stat.standardDeviation;
+// const computeMean = ArrayStat.mean;
+// const mean = Stat.mean;
+// const stdev = Stat.standardDeviation;
 
 
 // ============================================
@@ -30,98 +30,51 @@ const stdev = Stat.standardDeviation;
  * Each observation has variables (columns)
  * Details about observations and variables are described as options
  * @param {Matrix} dataMatrix - must have dimensions (observations.length x variables.length)
- * @param {Object} options
+ * @param {object} options
  * @param {Array} [options.observations] An array with obervations unique identifiers
  * @param {Array} [options.variables] An array with names of variables
- * @param {String} [options.description] A simple description of the dataset
+ * @param {string} [options.description] A simple description of the dataset
  * @param {Array} [options.dataClass] A multidimensional array describing the class of each observations
  * @param {Array} [options.outliers] An array of outliers objects
  * @param {Array} [options.metadata] An array of objects containing additional information about each observations
+ * @return {object} that contains a dataset
  */
-
 const createDataset = ({ dataMatrix, options } = {}) => {
   let nObs = dataMatrix.rows;
   let nVar = dataMatrix.columns;
 
-  let aa = {};
+  let defaultObservations = [];
+  for (let i = 0; i < nObs; i++) {
+    defaultObservations.push(`OBS${i + 1}`);
+  }
+
+  let defaultVariables = [];
+  for (let i = 0; i < nVar; i++) {
+    defaultVariables.push(`VAR${i + 1}`);
+  }
+
   const {
-    descriptio = 123
-    // observations = Array(nObs).fill(null).map((x, i) => 'OBS' + (i + 1)),
-    // variables = Array(nVar).fill(null).map((x, i) => 'VAR' + (i + 1)),
-    // description = 'NA'
-    // metadata = [],
-    // outliers = []
-  } = aa;
+    observations = defaultObservations,
+    variables = defaultVariables,
+    description = 'NA',
+    dataClass = [],
+    metadata = [],
+    outliers = []
+  } = options;
 
-  let defaults = {
-    observations: Array(nObs).fill(null).map((x, i) => `OBS${i + 1}`),
-    variables: Array(nVar).fill(null).map((x, i) => `VAR${i + 1}`),
-    description: 'NA',
-    metadata: [],
-    outliers: []
-  };
-
-  options = Object.assign({}, defaults, options);
-
-  let observations = options.observations;
-  let variables = options.variables;
-  let description = options.description;
-  let dataClass = options.dataClass;
-  let metadata = options.metadata;
-  let outliers = options.outliers;
-
-  if (options.observations.length !== nObs ||
-        options.variables.length !== nVar ||
-        options.dataClass[0].value.length !== nObs) {
+  if (observations.length !== nObs ||
+        variables.length !== nVar) {
     throw new RangeError('observations and dataMatrix have different number of rows');
   }
 
-  // private util functions
-
-  function getRowIndexByID() {
-    let sampleList = observations.map((x) => x);
-    let outlierList = outliers.map((x) => x.id);
-    let ind = outlierList.map((e) => sampleList.indexOf(e));
-    return ind;
-  }
-
-  function getClassVector(dataClass) {
-    let title = dataClass.title;
-    let classVector = dataClass.value;
-    let type = typeof (classVector[0]);
-    let counts = {};
-    switch (type) {
-      case 'string':
-        counts = {};
-        classVector.forEach((x) => counts[x] = (counts[x] || 0) + 1);
-        break;
-      case 'number':
-        classVector = classVector.map((x) => x.toString());
-        counts = {};
-        classVector.forEach((x) => counts[x] = (counts[x] || 0) + 1);
-        break;
-      default:
-    }
-    let groupIDs = Object.keys(counts);
-    let nClass = groupIDs.length;
-    let classFactor = classVector.map((x) => groupIDs.indexOf(x));
-    let classMatrix = Matrix.from1DArray(nObs, 1, classFactor);
-    return ({ title,
-      groupIDs,
-      nClass,
-      classVector,
-      classFactor,
-      classMatrix
-    });
-  }
+  let nClass;
+  (dataClass.length === 0) ? nClass = 0 : nClass = dataClass.summary().nClass;
 
   return ({ description,
 
     // API exposed functions
-
     getClass() {
-      let a = dataClass.map((x) => getClassVector(x));
-      return a;
+      return dataClass.getDataClasses();
     },
 
     getOutliers() {
@@ -147,7 +100,9 @@ const createDataset = ({ dataMatrix, options } = {}) => {
 
     clean() {
       if (outliers.length > 0) {
-        let ind = getRowIndexByID();
+        let sampleList = observations.map((x) => x);
+        let outlierList = outliers.map((x) => x.id);
+        let ind = outlierList.map((e) => sampleList.indexOf(e));
         console.log(ind);
         let cleanObservations = observations.filter((e, i) => !ind.includes(i));
         let cleanDataMatrix = new Matrix(nObs - ind.length, nVar);
@@ -249,15 +204,15 @@ const createDataset = ({ dataMatrix, options } = {}) => {
       }
     },
 
-    // return everything but cannot be changed
+    // returns everything but cannot be changed
     summary(verbose = 0) {
       if (verbose === 1) {
-        console.log(`Description: ${description
-        }\nNumber of variables: ${nVar
-        }\nNumber of observations: ${nObs
-        }\nNumber of outliers:${outliers.length
-        }\nHas class: ${dataClass.length
-        }\nHas metadata: ${metadata.length > 0}`);
+        console.log(`Description: ${description}
+        \nNumber of variables: ${nVar}
+        \nNumber of observations: ${nObs}
+        \nNumber of outliers:${outliers.length}
+        \nHas class: ${nClass}
+        \nHas metadata: ${metadata.length > 0}`);
       }
       return ({ dataMatrix,
         dataClass,

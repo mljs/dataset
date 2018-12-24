@@ -7,16 +7,18 @@
 
 'use strict';
 
-/**
- * Create classes for dataset
- * @param {String} title A title for the class
- * @param {Array} value An array with class values
-*/
-
 const { Matrix } = require('ml');
 
 const shuffle = require('./utils/shuffle.js');
 
+/**
+ * Create classes for dataset
+ * @param {string} title A title for the class
+ * @param {Array} value An array with class values
+ * @return {function} Methods to retrieve dataClasses
+ * @requires ml
+ * @requires utils/shuffle
+*/
 const createDataClasses = (title, value) => {
   let dataClasses = [];
   dataClasses.push({ title, value });
@@ -36,12 +38,18 @@ const createDataClasses = (title, value) => {
     switch (type) {
       case 'string':
         counts = {};
-        classVector.forEach((x) => counts[x] = (counts[x] || 0) + 1);
+        classVector.forEach((x) => {
+          counts[x] = (counts[x] || 0) + 1;
+          return counts;
+        });
         break;
       case 'number':
         // classVector = classVector.map((x) => x.toString());
         counts = {};
-        classVector.forEach((x) => counts[x] = (counts[x] || 0) + 1);
+        classVector.forEach((x) => {
+          counts[x] = (counts[x] || 0) + 1;
+          return counts;
+        });
         break;
       default:
     }
@@ -177,13 +185,17 @@ const createDataClasses = (title, value) => {
 
       // counts the class elements
       let counts = {};
-      classVectorSorted.forEach((x) => counts[x] = (counts[x] || 0) + 1);
+      classVectorSorted.forEach((x) => {
+        counts[x] = (counts[x] || 0) + 1;
+        return counts;
+      });
 
       // pick a few per class
       let indexOfSelected = [];
 
       Object.keys(counts).forEach((e, i) => {
         let shift = [];
+        // eslint-disable-next-line no-return-assign
         Object.values(counts).reduce((a, c, i) => shift[i] = a + c, 0);
 
         let arr = [...Array(counts[e]).keys()];
@@ -196,7 +208,8 @@ const createDataClasses = (title, value) => {
           arr.splice(ind, 1);
         }
 
-        (i == 0) ? indexOfSelected = indexOfSelected.concat(r) : indexOfSelected = indexOfSelected.concat(r.map((x) => x + shift[i - 1]));
+        // eslint-disable-next-line no-unused-expressions
+        (i === 0) ? indexOfSelected = indexOfSelected.concat(r) : indexOfSelected = indexOfSelected.concat(r.map((x) => x + shift[i - 1]));
       });
 
       // sort back the index
@@ -214,6 +227,7 @@ const createDataClasses = (title, value) => {
     summary(verbose = 0) {
       let nClass = dataClasses.length;
       if (verbose === 1) {
+        // eslint-disable-next-line no-console
         console.log(`Number of Classes: ${dataClasses.length}
         \nNumber of observations: ${nObs}`);
       }

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`createDataClasses tests test summary 1`] = `
+exports[`creation of dataClasses should display a summary 1`] = `
 Array [
   "setosa",
   "setosa",
