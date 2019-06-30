@@ -1,21 +1,12 @@
 'use strict';
 
-// let Utils = {};
-// Utils.norm = function norm(X) {
-//   return Math.sqrt(X.clone().apply(pow2array).sum());
-// };
-
-
 const {
   Matrix
-  // MatrixStat: Stat,
-  // ArrayStat
 } = require('ml');
 
 // const computeMean = ArrayStat.mean;
 // const mean = Stat.mean;
 // const stdev = Stat.standardDeviation;
-
 
 // ============================================
 // Factory functions
