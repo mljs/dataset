@@ -1,25 +1,14 @@
-// is this function a closure? it works as is, but has not
-// the signature  Object = (() => {})();
-// const count = (() => {
-//     let counter = 0;
-//     return () => counter += 1; return counter;
-// })();
+import { Matrix } from 'ml-matrix';
 
-'use strict';
-
-const { Matrix } = require('ml');
-
-const shuffle = require('./utils/shuffle.js');
+import shuffle from './utils/shuffle.js';
 
 /**
  * Create classes for dataset
  * @param {string} title A title for the class
  * @param {Array} value An array with class values
  * @return {function} Methods to retrieve dataClasses
- * @requires ml
- * @requires utils/shuffle
-*/
-const createDataClasses = (title, value) => {
+ */
+export default function createDataClasses(title, value) {
   let dataClasses = [];
   dataClasses.push({ title, value });
   let nObs = value.length;
@@ -33,7 +22,7 @@ const createDataClasses = (title, value) => {
     let title = dataClass.title;
     let classVector = dataClass.value;
     let nObs = classVector.length;
-    let type = typeof (classVector[0]);
+    let type = typeof classVector[0];
     let counts = {};
     switch (type) {
       case 'string':
@@ -58,29 +47,29 @@ const createDataClasses = (title, value) => {
     let classFactor = classVector.map((x) => groupIDs.indexOf(x));
     let classMatrix = Matrix.from1DArray(nObs, 1, classFactor);
 
-    return ({
+    return {
       title,
       groupIDs,
       nClass,
       classVector,
       classFactor,
-      classMatrix
-    });
+      classMatrix,
+    };
   }
 
   /**
-  * Reorders an array according to new index
-  * @param {Array} array An array to reorder
-  * @param {Array} newIndex The index with new order
-  * @return {Array} The re-ordered array
-  */
+   * Reorders an array according to new index
+   * @param {Array} array An array to reorder
+   * @param {Array} newIndex The index with new order
+   * @return {Array} The re-ordered array
+   */
   function reorder(array, newIndex) {
     let permutedVector = [];
     newIndex.forEach((e) => permutedVector.push(array[e]));
     return permutedVector;
   }
 
-  return ({
+  return {
     /**
      * Returns dataClass in different formats
      * @param {Array} idx
@@ -157,7 +146,9 @@ const createDataClasses = (title, value) => {
     filterObservationsByIndex(idx) {
       let newClasses;
       for (let i = 0; i < dataClasses.length; i++) {
-        let value = dataClasses[i].value.slice(0).filter((v, i) => !idx.includes(i));
+        let value = dataClasses[i].value
+          .slice(0)
+          .filter((v, i) => !idx.includes(i));
         let title = `${dataClasses[i].title}_filtered`;
         if (i === 0) {
           newClasses = createDataClasses(title, value);
@@ -178,9 +169,13 @@ const createDataClasses = (title, value) => {
       let classVector = getClassVector(dataClasses[idx]).classVector;
       // sort the vector
       let classVectorSorted = JSON.parse(JSON.stringify(classVector));
-      let result = Array.from(Array(classVectorSorted.length).keys())
-        .sort((a, b) => (classVectorSorted[a] < classVectorSorted[b] ? -1 :
-          (classVectorSorted[b] < classVectorSorted[a]) | 0));
+      let result = Array.from(
+        Array(classVectorSorted.length).keys(),
+      ).sort((a, b) =>
+        classVectorSorted[a] < classVectorSorted[b]
+          ? -1
+          : (classVectorSorted[b] < classVectorSorted[a]) | 0,
+      );
       classVectorSorted.sort((a, b) => (a < b ? -1 : (b < a) | 0));
 
       // counts the class elements
@@ -196,7 +191,7 @@ const createDataClasses = (title, value) => {
       Object.keys(counts).forEach((e, i) => {
         let shift = [];
         // eslint-disable-next-line no-return-assign
-        Object.values(counts).reduce((a, c, i) => shift[i] = a + c, 0);
+        Object.values(counts).reduce((a, c, i) => (shift[i] = a + c), 0);
 
         let arr = [...Array(counts[e]).keys()];
 
@@ -209,7 +204,11 @@ const createDataClasses = (title, value) => {
         }
 
         // eslint-disable-next-line no-unused-expressions
-        (i === 0) ? indexOfSelected = indexOfSelected.concat(r) : indexOfSelected = indexOfSelected.concat(r.map((x) => x + shift[i - 1]));
+        i === 0
+          ? (indexOfSelected = indexOfSelected.concat(r))
+          : (indexOfSelected = indexOfSelected.concat(
+              r.map((x) => x + shift[i - 1]),
+            ));
       });
 
       // sort back the index
@@ -231,14 +230,11 @@ const createDataClasses = (title, value) => {
         console.log(`Number of Classes: ${dataClasses.length}
         \nNumber of observations: ${nObs}`);
       }
-      return ({
+      return {
         dataClasses,
         nObs,
-        nClass
-      });
-    }
-  });
-};
-
-module.exports = createDataClasses;
-
+        nClass,
+      };
+    },
+  };
+}

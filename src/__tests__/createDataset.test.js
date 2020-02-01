@@ -1,25 +1,18 @@
-'use strict';
+import { Matrix } from 'ml-matrix';
+import createDataset from '../createDataset.js';
+import createDataClasses from '../createDataClasses.js';
 
-// const dataset = require('..');
+import iris from 'ml-dataset-iris/src/iris.json';
 
-const { Matrix } = require('ml');
-
-const createDataset = require('../createDataset.js');
-const createDataClasses = require('../createDataClasses.js');
-
-let iris = require('./data/iris.js');
-
-let irisDataset;
-
-describe('creation of datasets', () => {
+describe('ccreateDataset', () => {
   // build dataClasses
   let metadata = iris.map((d) => d[4]);
-  let dataClass = createDataClasses('species',
-    metadata);
+  let dataClass = createDataClasses('species', metadata);
 
   // build dataMatrix
   let dataArray = new Matrix(150, 4);
   let arrr = iris.map((d) => d.slice(0, 4));
+
   arrr.forEach((e, i) => dataArray.setRow(i, arrr[i]));
 
   it('should init', () => {
@@ -40,7 +33,7 @@ describe('creation of datasets', () => {
     dataset.pushDataBlock(description, dataMatrix);
     expect(dataset.summary().dataBlock).toHaveLength(1);
     expect(dataset.summary().dataBlock[0].description).toEqual('nmr block');
-    expect(typeof(dataset.summary().dataBlock[0].value).toEqual('matrix');
+    expect(typeof dataset.summary().dataBlock[0].value).toEqual('matrix');
     expect(dataset.summary().dataBlock[0].value.rows).toEqual(34);
     expect(dataset.summary().dataBlock[0].value.columns).toEqual(1610);
   });
@@ -51,7 +44,7 @@ describe('creation of datasets', () => {
     dataset.pushDataBlockFromArray(description, dataArray);
     expect(dataset.summary().dataBlock).toHaveLength(2);
     expect(dataset.summary().dataBlock[0].description).toEqual('ms block');
-    expect(typeof(dataset.summary().dataBlock[0].value).toEqual('matrix');
+    expect(typeof dataset.summary().dataBlock[0].value).toEqual('matrix');
     expect(dataset.summary().dataBlock[0].value.rows).toEqual(34);
     expect(dataset.summary().dataBlock[0].value.columns).toEqual(7);
   });
@@ -73,7 +66,7 @@ describe('creation of datasets', () => {
     let column = [6, 7];
     let block = 0;
     let removedVariable = dataset.rmVariablesFromDataBlock(block, column);
-    expect(typeof(removedVariable)).toBe('matrix');
+    expect(typeof removedVariable).toBe('matrix');
     expect(removedVariable.columns).toEqual(2);
     expect(removedVariable.rows).toEqual(34);
     expect(dataset.summary().dataBlock[0].value.rows).toEqual(34);

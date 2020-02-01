@@ -1,8 +1,4 @@
-'use strict';
-
-const {
-  Matrix
-} = require('ml');
+import { Matrix } from 'ml-matrix';
 
 // const computeMean = ArrayStat.mean;
 // const mean = Stat.mean;
@@ -21,7 +17,7 @@ const {
  * Each observation has variables (columns)
  * Details about observations and variables are described as options
  * @param {Matrix} dataMatrix - must have dimensions (observations.length x variables.length)
- * @param {object} options
+ * @param {object} [options={}]
  * @param {Array} [options.observations] An array with obervations unique identifiers
  * @param {Array} [options.variables] An array with names of variables
  * @param {string} [options.description] A simple description of the dataset
@@ -30,7 +26,7 @@ const {
  * @param {Array} [options.metadata] An array of objects containing additional information about each observations
  * @return {object} that contains a dataset
  */
-const createDataset = ({ dataMatrix, options } = {}) => {
+export default function createDataset(dataMatrix, options = {}) {
   let nObs = dataMatrix.rows;
   let nVar = dataMatrix.columns;
 
@@ -50,18 +46,20 @@ const createDataset = ({ dataMatrix, options } = {}) => {
     description = 'NA',
     dataClass = [],
     metadata = [],
-    outliers = []
+    outliers = [],
   } = options;
 
-  if (observations.length !== nObs ||
-        variables.length !== nVar) {
-    throw new RangeError('observations and dataMatrix have different number of rows');
+  if (observations.length !== nObs || variables.length !== nVar) {
+    throw new RangeError(
+      'observations and dataMatrix have different number of rows',
+    );
   }
 
   let nClass;
-  (dataClass.length === 0) ? nClass = 0 : nClass = dataClass.summary().nClass;
+  dataClass.length === 0 ? (nClass = 0) : (nClass = dataClass.summary().nClass);
 
-  return ({ description,
+  return {
+    description,
 
     // API exposed functions
     getClass() {
@@ -107,8 +105,10 @@ const createDataset = ({ dataMatrix, options } = {}) => {
         });
 
         let cleanDataClass = dataClass.map((x) => {
-          return { title: x.title,
-            value: x.value.filter((e, i) => !ind.includes(i)) };
+          return {
+            title: x.title,
+            value: x.value.filter((e, i) => !ind.includes(i)),
+          };
         });
         // let cleanMetadata = metadata.filter((e, i) => !ind.includes(i));
 
@@ -120,7 +120,9 @@ const createDataset = ({ dataMatrix, options } = {}) => {
             dataClass: cleanDataClass,
             outliers: [],
             // metadata: cleanMetadata, // lack of test for dimensions
-            description: `clean ${description}` } });
+            description: `clean ${description}`,
+          },
+        });
       } else {
         return this;
       }
@@ -158,13 +160,17 @@ const createDataset = ({ dataMatrix, options } = {}) => {
 
         // filter class vector
         let trainDataClass = dataClass.map((x) => {
-          return { title: x.title,
-            value: x.value.filter((e, i) => !ind.includes(i)) };
+          return {
+            title: x.title,
+            value: x.value.filter((e, i) => !ind.includes(i)),
+          };
         });
 
         let testDataClass = dataClass.map((x) => {
-          return { title: x.title,
-            value: x.value.filter((e, i) => ind.includes(i)) };
+          return {
+            title: x.title,
+            value: x.value.filter((e, i) => ind.includes(i)),
+          };
         });
 
         // let cleanMetadata = metadata.filter((e, i) => !ind.includes(i));
@@ -177,7 +183,9 @@ const createDataset = ({ dataMatrix, options } = {}) => {
             dataClass: trainDataClass,
             outliers: [],
             // metadata: cleanMetadata, // lack of test for dimensions
-            description: `train ${description}` } });
+            description: `train ${description}`,
+          },
+        });
 
         let test = Dataset({
           dataMatrix: testDataMatrix,
@@ -187,7 +195,9 @@ const createDataset = ({ dataMatrix, options } = {}) => {
             dataClass: testDataClass,
             outliers: [],
             // metadata: cleanMetadata, // lack of test for dimensions
-            description: `test ${description}` } });
+            description: `test ${description}`,
+          },
+        });
 
         return { train, test };
       } else {
@@ -205,18 +215,16 @@ const createDataset = ({ dataMatrix, options } = {}) => {
         \nHas class: ${nClass}
         \nHas metadata: ${metadata.length > 0}`);
       }
-      return ({ dataMatrix,
+      return {
+        dataMatrix,
         dataClass,
         nObs,
         nVar,
         observations,
         variables,
         metadata,
-        description
-      });
-    }
-
-  });
-};
-
-module.exports = createDataset;
+        description,
+      };
+    },
+  };
+}

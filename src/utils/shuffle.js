@@ -1,15 +1,13 @@
-
 // https://bost.ocks.org/mike/shuffle/
-
-'use strict';
 
 /**
  * Shuffle an array
  * @param {Array} array The array that must be shuffled
  */
-
-function shuffle(array) {
-  let m = array.length; let t; let i;
+export default function shuffle(array) {
+  let m = array.length;
+  let t;
+  let i;
 
   // While there remain elements to shuffle…
   while (m) {
@@ -24,5 +22,3 @@ function shuffle(array) {
 
   return array;
 }
-
-module.exports = shuffle;
